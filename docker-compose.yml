@@ -1,0 +1,135 @@
+version: "3.7"
+
+services:
+  mongo-frontend:
+    container_name: mongo-frontend
+    image: mongo:3.2-jessie
+    ports:
+      - 2999:27017
+    volumes:
+      - fe:/data/db
+    command: ["mongos", "--configdb", "cs/mongo-cs-1, cs/mongo-cs-1, cs/mongo-cs-1"]
+    networks:
+      - mongocluster
+    depends_on:
+      - mongo-cs-1
+      # - mongo-cs-2
+      # - mongo-cs-3
+
+  mongo-cs-1:
+    container_name: mongo-cs-1
+    image: mongo:3.2-jessie
+    ports:
+      - 3007:27019
+    volumes:
+      - cs1:/data/db
+    command: ["--configsvr", "--replSet", "cs"]
+    networks:
+      - mongocluster
+  mongo-cs-2:
+    container_name: mongo-cs-2
+    image: mongo:3.2-jessie
+    ports:
+      - 3008:27019
+    volumes:
+      - cs2:/data/db
+    command: ["--configsvr", "--replSet", "cs"]
+    networks:
+      - mongocluster
+  mongo-cs-3:
+    container_name: mongo-cs-3
+    image: mongo:3.2-jessie
+    ports:
+      - 3009:27019
+    volumes:
+      - cs3:/data/db
+    command: ["--configsvr", "--replSet", "cs"]
+    networks:
+      - mongocluster
+  # mongo-sh1-n1:
+  #   container_name: mongo-sh1-n1
+  #   image: mongo:3.2-jessie
+  #   ports:
+  #     - 3001:27017
+  #   volumes:
+  #     - sh1n1:/data/db
+  #   # command: ["mongod", "--shardsvr", "--replSet", "sh1-replica"]
+  #   networks:
+  #     - mongocluster
+  # mongo-sh1-n2:
+  #   container_name: mongo-sh1-n2
+  #   image: mongo:3.2-jessie
+  #   ports:
+  #     - 3002:27017
+  #   volumes:
+  #     - sh1n2:/data/db
+  #   # command: ["mongod", "--shardsvr", "--replSet", "sh1-replica"]
+  #   networks:
+  #     - mongocluster
+  #   depends_on:
+  #     - mongo-sh1-n1
+  # mongo-sh1-n3:
+  #   container_name: mongo-sh1-n3
+  #   image: mongo:3.2-jessie
+  #   ports:
+  #     - 3003:27017
+  #   # command: ["mongod", "--shardsvr", "--replSet", "sh1-replica"]
+  #   volumes:
+  #     - sh1n3:/data/db
+  #   networks:
+  #     - mongocluster
+  #   depends_on:
+  #     - mongo-sh1-n1
+  # mongo-sh2-n1:
+  #   container_name: mongo-sh2-n1
+  #   image: mongo:3.2-jessie
+  #   ports:
+  #     - 3004:27017
+  #   # command: ["mongod", "--shardsvr", "--replSet", "sh2-replica"]
+  #   volumes:
+  #     - sh2n1:/data/db
+  #   networks:
+  #     - mongocluster
+  # mongo-sh2-n2:
+  #   container_name: mongo-sh2-n2
+  #   image: mongo:3.2-jessie
+  #   ports:
+  #     - 3005:27017
+  #   # command: ["mongod", "--shardsvr", "--replSet", "sh2-replica"]
+  #   volumes:
+  #     - sh2n2:/data/db
+  #   networks:
+  #     - mongocluster
+  #   depends_on:
+  #     - mongo-sh2-n1
+  # mongo-sh2-n3:
+  #   container_name: mongo-sh2-n3
+  #   image: mongo:3.2-jessie
+  #   ports:
+  #     - 3006:27017
+  #   # command: ["mongod", "--shardsvr", "--replSet", "sh2-replica"]
+  #   volumes:
+  #     - sh2n3:/data/db
+  #   networks:
+  #     - mongocluster
+  #   depends_on:
+  #     - mongo-sh2-n1
+  # ubuntu:
+  #   container_name: ubuntu
+  #   image: ubuntu-upstart:latest
+  #   networks:
+  #     - mongocluster
+volumes:
+  sh1n1:
+  sh1n2:
+  sh1n3:
+  sh2n1:
+  sh2n2:
+  sh2n3:
+  cs1:
+  cs2:
+  cs3:
+  fe:
+networks:
+  mongocluster:
+    driver: bridge

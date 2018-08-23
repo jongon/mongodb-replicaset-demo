@@ -1,0 +1,18 @@
+{
+    "_id": "replica",
+    "members": [{
+            "_id": 0,
+            "host": "mongoFirst:27017",
+            "priority": 10
+        },
+        {
+            "_id": 1,
+            "host": "mongoSecond:27017"
+        },
+        {
+            "_id": 2,
+            "host": "mongoThird:27017",
+            "arbiterOnly": true
+        }
+    ]
+}
