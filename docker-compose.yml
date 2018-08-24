@@ -1,38 +1,48 @@
-version: "3.7"
+version: "3.6"
 
 services:
   mongo-frontend:
     container_name: mongo-frontend
     image: mongo:3.2-jessie
     ports:
-      - 2999:27017
+      - 3000:27017
     volumes:
-      - fe:/data/db
-    command: ["mongos", "--configdb", "cs/mongo-cs-1, cs/mongo-cs-1, cs/mongo-cs-1"]
+      - fe-data:/data/db
+    command: [
+      "mongos",
+      "--configdb",
+      "${REPL_SET_NAME}/mongo-cs-1",
+      "${REPL_SET_NAME}/mongo-cs-2",
+      "${REPL_SET_NAME}/mongo-cs-3"
+    ]
     networks:
       - mongocluster
     depends_on:
       - mongo-cs-1
-      # - mongo-cs-2
-      # - mongo-cs-3
+      - mongo-cs-2
+      - mongo-cs-3
 
   mongo-cs-1:
+    image: mongo-cs
     container_name: mongo-cs-1
-    image: mongo:3.2-jessie
+    build:
+      context: ./mongo-cs
+      dockerfile: Dockerfile
+      args: 
+        replSet_name: "${REPL_SET_NAME}"
     ports:
-      - 3007:27019
+      - 3001:27019
     volumes:
-      - cs1:/data/db
-    command: ["--configsvr", "--replSet", "cs"]
+      - cs1-data:/data/db
     networks:
       - mongocluster
   mongo-cs-2:
     container_name: mongo-cs-2
     image: mongo:3.2-jessie
     ports:
-      - 3008:27019
+      - 3002:27019
     volumes:
-      - cs2:/data/db
+      - cs2-data:/data/db
     command: ["--configsvr", "--replSet", "cs"]
     networks:
       - mongocluster
@@ -40,9 +50,9 @@ services:
     container_name: mongo-cs-3
     image: mongo:3.2-jessie
     ports:
-      - 3009:27019
+      - 3003:27019
     volumes:
-      - cs3:/data/db
+      - cs3-data:/data/db
     command: ["--configsvr", "--replSet", "cs"]
     networks:
       - mongocluster
@@ -120,16 +130,16 @@ services:
   #   networks:
   #     - mongocluster
 volumes:
-  sh1n1:
-  sh1n2:
-  sh1n3:
-  sh2n1:
-  sh2n2:
-  sh2n3:
-  cs1:
-  cs2:
-  cs3:
-  fe:
+  sh1n1-data:
+  sh1n2-data:
+  sh1n3-data:
+  sh2n1-data:
+  sh2n2-data:
+  sh2n3-data:
+  cs1-data:
+  cs2-data:
+  cs3-data:
+  fe-data:
 networks:
   mongocluster:
     driver: bridge
