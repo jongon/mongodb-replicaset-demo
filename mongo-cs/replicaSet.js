@@ -1,7 +1,7 @@
 let error = true
 
 let res = [
-    db.users.insert({ name: "test" })
+    db.users.insert({ name: "test3" })
 ]
 
 printjson(res)

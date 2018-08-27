@@ -1,61 +1,58 @@
 version: "3.6"
 
 services:
-  mongo-frontend:
-    container_name: mongo-frontend
-    image: mongo:3.2-jessie
-    ports:
-      - 3000:27017
-    volumes:
-      - fe-data:/data/db
-    command: [
-      "mongos",
-      "--configdb",
-      "${REPL_SET_NAME}/mongo-cs-1",
-      "${REPL_SET_NAME}/mongo-cs-2",
-      "${REPL_SET_NAME}/mongo-cs-3"
-    ]
-    networks:
-      - mongocluster
-    depends_on:
-      - mongo-cs-1
-      - mongo-cs-2
-      - mongo-cs-3
+  # mongo-frontend:
+  #   container_name: mongo-frontend
+  #   image: mongo:3.2-jessie
+  #   ports:
+  #     - 3000:27017
+  #   volumes:
+  #     - fe-data:/data/db
+  #   command: [
+  #     "mongos",
+  #     "--configdb",
+  #     "${REPL_SET_NAME}/mongo-cs-1",
+  #     "${REPL_SET_NAME}/mongo-cs-2",
+  #     "${REPL_SET_NAME}/mongo-cs-3"
+  #   ]
+  #   networks:
+  #     - mongocluster
+  #   depends_on:
+  #     - mongo-cs-1
+  #     - mongo-cs-2
+  #     - mongo-cs-3
 
   mongo-cs-1:
-    image: mongo-cs
     container_name: mongo-cs-1
-    build:
-      context: ./mongo-cs
-      dockerfile: Dockerfile
-      args: 
-        replSet_name: "${REPL_SET_NAME}"
+    image: mongo:3.2-jessie
     ports:
-      - 3001:27019
+      - 3001:27017
     volumes:
       - cs1-data:/data/db
+      - ./mongo-cs:/docker-entrypoint-initdb.d
+    # command: ["--configsvr", "--replSet", "${REPL_SET_NAME}"]
     networks:
       - mongocluster
-  mongo-cs-2:
-    container_name: mongo-cs-2
-    image: mongo:3.2-jessie
-    ports:
-      - 3002:27019
-    volumes:
-      - cs2-data:/data/db
-    command: ["--configsvr", "--replSet", "cs"]
-    networks:
-      - mongocluster
-  mongo-cs-3:
-    container_name: mongo-cs-3
-    image: mongo:3.2-jessie
-    ports:
-      - 3003:27019
-    volumes:
-      - cs3-data:/data/db
-    command: ["--configsvr", "--replSet", "cs"]
-    networks:
-      - mongocluster
+  # mongo-cs-2:
+  #   container_name: mongo-cs-2
+  #   image: mongo:3.2-jessie
+  #   ports:
+  #     - 3002:27019
+  #   volumes:
+  #     - cs2-data:/data/db
+  #   command: ["--configsvr", "--replSet", "${REPL_SET_NAME}"]
+  #   networks:
+  #     - mongocluster
+  # mongo-cs-3:
+  #   container_name: mongo-cs-3
+  #   image: mongo:3.2-jessie
+  #   ports:
+  #     - 3003:27019
+  #   volumes:
+  #     - cs3-data:/data/db
+  #   command: ["--configsvr", "--replSet", "${REPL_SET_NAME}"]
+  #   networks:
+  #     - mongocluster
   # mongo-sh1-n1:
   #   container_name: mongo-sh1-n1
   #   image: mongo:3.2-jessie
