@@ -1,142 +1,44 @@
-version: "3.6"
-
+version: '3.7'
 services:
-  # mongo-frontend:
-  #   container_name: mongo-frontend
-  #   image: mongo:3.2-jessie
-  #   ports:
-  #     - 3000:27017
-  #   volumes:
-  #     - fe-data:/data/db
-  #   command: [
-  #     "mongos",
-  #     "--configdb",
-  #     "${REPL_SET_NAME}/mongo-cs-1",
-  #     "${REPL_SET_NAME}/mongo-cs-2",
-  #     "${REPL_SET_NAME}/mongo-cs-3"
-  #   ]
-  #   networks:
-  #     - mongocluster
-  #   depends_on:
-  #     - mongo-cs-1
-  #     - mongo-cs-2
-  #     - mongo-cs-3
-
-  mongo-cs-1:
-    container_name: mongo-cs-1
-    image: mongo:3.2-jessie
+  mongo-rs0-1:
+    image: "mongo-start"
+    container_name: mongo-rs0-1
+    build: ./mongo-rs0-1
     ports:
-      - 3001:27017
+      - "27017:27017"
     volumes:
-      - cs1-data:/data/db
-      - ./mongo-cs:/docker-entrypoint-initdb.d
-    # command: ["--configsvr", "--replSet", "${REPL_SET_NAME}"]
-    networks:
-      - mongocluster
-  # mongo-cs-2:
-  #   container_name: mongo-cs-2
-  #   image: mongo:3.2-jessie
-  #   ports:
-  #     - 3002:27019
-  #   volumes:
-  #     - cs2-data:/data/db
-  #   command: ["--configsvr", "--replSet", "${REPL_SET_NAME}"]
-  #   networks:
-  #     - mongocluster
-  # mongo-cs-3:
-  #   container_name: mongo-cs-3
-  #   image: mongo:3.2-jessie
-  #   ports:
-  #     - 3003:27019
-  #   volumes:
-  #     - cs3-data:/data/db
-  #   command: ["--configsvr", "--replSet", "${REPL_SET_NAME}"]
-  #   networks:
-  #     - mongocluster
-  # mongo-sh1-n1:
-  #   container_name: mongo-sh1-n1
-  #   image: mongo:3.2-jessie
-  #   ports:
-  #     - 3001:27017
-  #   volumes:
-  #     - sh1n1:/data/db
-  #   # command: ["mongod", "--shardsvr", "--replSet", "sh1-replica"]
-  #   networks:
-  #     - mongocluster
-  # mongo-sh1-n2:
-  #   container_name: mongo-sh1-n2
-  #   image: mongo:3.2-jessie
-  #   ports:
-  #     - 3002:27017
-  #   volumes:
-  #     - sh1n2:/data/db
-  #   # command: ["mongod", "--shardsvr", "--replSet", "sh1-replica"]
-  #   networks:
-  #     - mongocluster
-  #   depends_on:
-  #     - mongo-sh1-n1
-  # mongo-sh1-n3:
-  #   container_name: mongo-sh1-n3
-  #   image: mongo:3.2-jessie
-  #   ports:
-  #     - 3003:27017
-  #   # command: ["mongod", "--shardsvr", "--replSet", "sh1-replica"]
-  #   volumes:
-  #     - sh1n3:/data/db
-  #   networks:
-  #     - mongocluster
-  #   depends_on:
-  #     - mongo-sh1-n1
-  # mongo-sh2-n1:
-  #   container_name: mongo-sh2-n1
-  #   image: mongo:3.2-jessie
-  #   ports:
-  #     - 3004:27017
-  #   # command: ["mongod", "--shardsvr", "--replSet", "sh2-replica"]
-  #   volumes:
-  #     - sh2n1:/data/db
-  #   networks:
-  #     - mongocluster
-  # mongo-sh2-n2:
-  #   container_name: mongo-sh2-n2
-  #   image: mongo:3.2-jessie
-  #   ports:
-  #     - 3005:27017
-  #   # command: ["mongod", "--shardsvr", "--replSet", "sh2-replica"]
-  #   volumes:
-  #     - sh2n2:/data/db
-  #   networks:
-  #     - mongocluster
-  #   depends_on:
-  #     - mongo-sh2-n1
-  # mongo-sh2-n3:
-  #   container_name: mongo-sh2-n3
-  #   image: mongo:3.2-jessie
-  #   ports:
-  #     - 3006:27017
-  #   # command: ["mongod", "--shardsvr", "--replSet", "sh2-replica"]
-  #   volumes:
-  #     - sh2n3:/data/db
-  #   networks:
-  #     - mongocluster
-  #   depends_on:
-  #     - mongo-sh2-n1
-  # ubuntu:
-  #   container_name: ubuntu
-  #   image: ubuntu-upstart:latest
-  #   networks:
-  #     - mongocluster
-volumes:
-  sh1n1-data:
-  sh1n2-data:
-  sh1n3-data:
-  sh2n1-data:
-  sh2n2-data:
-  sh2n3-data:
-  cs1-data:
-  cs2-data:
-  cs3-data:
-  fe-data:
-networks:
-  mongocluster:
-    driver: bridge
+      - ./mongo-rs0-1/data:/data/db
+    depends_on:
+      - "mongo-rs0-2"
+      - "mongo-rs0-3"
+
+  mongo-rs0-2:
+    image: "mongo:3.2-jessie"
+    container_name: mongo-rs0-2
+    command: --replSet rs0 --smallfiles --oplogSize 128
+    ports:
+      - "27018:27017"
+    volumes:
+      - ./mongo-rs0-2/data:/data/db
+
+  mongo-rs0-3:
+    image: "mongo:3.2-jessie"
+    container_name: mongo-rs0-3
+    command: --replSet rs0 --smallfiles --oplogSize 128
+    ports:
+      - "27019:27017"
+    volumes:
+      - ./mongo-rs0-3/data:/data/db
+
+  setup-rs:
+    image: "setup-rs"
+    container_name: mongo_setup
+    build: ./setup
+    depends_on:
+      - "mongo-rs0-1"
+
+  adminmongo:
+    image: "mrvautin/adminmongo"
+    container_name: adminmongo
+    ports:
+      - "1234:1234"
